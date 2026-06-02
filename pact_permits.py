@@ -262,7 +262,22 @@ def update_geojson(per_dev):
     print(f"Updated {updated} features in GeoJSON")
 
 
+def load_csv_cache():
+    """Load records from cached CSV if it exists, avoiding a full re-fetch."""
+    if not _os.path.exists(OUT_CSV):
+        return None
+    records = []
+    with open(OUT_CSV, newline="") as f:
+        for row in __import__("csv").DictReader(f):
+            records.append(row)
+    print(f"Using cached {OUT_CSV} ({len(records)} records). Pass --refresh to re-fetch.")
+    return records
+
+
 if __name__ == "__main__":
+    import sys
+    refresh = "--refresh" in sys.argv
+
     with open(GEOJSON_PATH) as f:
         gj = json.load(f)
     units_by_dev = {
@@ -270,8 +285,10 @@ if __name__ == "__main__":
         for feat in gj["features"]
     }
 
-    records = fetch_all_pact_permits()
-    write_csv(records)
+    records = None if refresh else load_csv_cache()
+    if records is None:
+        records = fetch_all_pact_permits()
+        write_csv(records)
 
     agg = build_permits_agg(records, units_by_dev)
     with open(OUT_AGG, "w") as f:
