@@ -37,6 +37,7 @@ OUT_PACT_PRE = os.path.join(_HERE, 'nypd_pact_pre.csv')
 OUT_PACT     = os.path.join(_HERE, 'nypd_pact.csv')
 OUT_AGG      = os.path.join(_SITE, 'data/nypd_aggregate.json')
 OUT_CONV     = os.path.join(_SITE, 'data/nypd_by_conversion.json')
+OUT_COHORT   = os.path.join(_SITE, 'data/nypd_cohort.json')
 
 # ── config ────────────────────────────────────────────────────────────────────
 MIN_YEAR        = 2015
@@ -371,7 +372,7 @@ def build_conv_agg(pact_geo, pre_by_dev_year, post_recs):
     # index post records by dev -> year -> type -> n
     post_by_dev_year = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
     for r in post_recs:
-        yr  = r['year']
+        yr  = int(r['year'])
         t   = (r.get('type') or '').strip().upper()
         post_by_dev_year[r['development_name']][yr]['all'] += 1
         if t in TYPES:
@@ -421,6 +422,81 @@ def build_conv_agg(pact_geo, pre_by_dev_year, post_recs):
             'rate':   {t: round(n[t] / u * 1000, 2) if u else None for t in ['all'] + TYPES},
         })
         print(f'  bucket {bucket:+d}: {d["devs"]} devs, n={n["all"]}, rate={result[-1]["rate"]["all"]}')
+
+    return result
+
+# ── Phase D2: cohort calendar-year aggregate ─────────────────────────────────
+def build_cohort_agg(pact_geo, pre_by_dev_year, post_recs, agg):
+    """
+    For each calendar year, pool incidents across all PACT-destined buildings:
+    - Year >= conv_year: post-conversion incidents for that dev
+    - conv_year-PRE_CONV_YEARS <= year < conv_year: pre-conversion incidents
+    Units denominator = sum of units for developments with data in that year.
+    Ctrl data reused from Phase C aggregate to avoid recomputation.
+    """
+    # Index post-conv by (dev, year)
+    post_by_dev_yr = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+    for r in post_recs:
+        dev = r['development_name']
+        yr  = int(r['year'])
+        t   = (r.get('type') or '').strip().upper()
+        post_by_dev_yr[dev][yr]['all'] += 1
+        if t in TYPES:
+            post_by_dev_yr[dev][yr][t] += 1
+
+    # Ctrl lookup from Phase C
+    ctrl_by_yr = {row['year']: row for row in agg}
+
+    result = []
+    for year in range(MIN_YEAR, CURR_YEAR + 1):
+        n = {'all': 0, **{t: 0 for t in TYPES}}
+        total_units = 0
+        devs_in_scope = 0
+        devs_converted = 0
+
+        for dev, g in pact_geo.items():
+            conv_date = g.get('conv_date', '')
+            if not conv_date:
+                continue
+            conv_year = int(conv_date[:4])
+            units     = g.get('units', 0) or 0
+            if not units:
+                continue
+            pre_start = max(conv_year - PRE_CONV_YEARS, MIN_YEAR)
+
+            if year >= conv_year:
+                devs_converted += 1
+                devs_in_scope  += 1
+                total_units    += units
+                for t in n:
+                    n[t] += post_by_dev_yr[dev][year].get(t, 0)
+            elif year >= pre_start:
+                devs_in_scope += 1
+                total_units   += units
+                pre_yr = pre_by_dev_year.get(dev, {}).get(year, {})
+                for t in n:
+                    n[t] += pre_yr.get(t, 0)
+
+        if total_units == 0:
+            continue
+
+        ctrl_row = ctrl_by_yr.get(year, {})
+        rate = {t: round(n[t] / total_units * 1000, 2) for t in n}
+        result.append({
+            'year':                year,
+            'pact_devs_in_scope':  devs_in_scope,
+            'pact_devs_converted': devs_converted,
+            'pact_units':          total_units,
+            'pact_n':              n,
+            'pact_rate':           rate,
+            'ctrl_units':          ctrl_row.get('ctrl_units'),
+            'ctrl_n':              ctrl_row.get('ctrl_n'),
+            'ctrl_rate':           ctrl_row.get('ctrl_rate'),
+        })
+        c = ctrl_row.get('ctrl_rate', {})
+        print(f'  {year}: {devs_converted}/{devs_in_scope} converted  '
+              f'n={n["all"]}/{total_units}u={rate["all"]}  '
+              f'ctrl={c.get("all")}')
 
     return result
 
@@ -553,6 +629,12 @@ if __name__ == '__main__':
     with open(OUT_CONV, 'w') as f:
         json.dump(conv_agg, f, indent=2)
     print(f'Wrote {OUT_CONV}\n')
+
+    print('=== Phase D2: cohort calendar-year aggregate ===')
+    cohort_agg = build_cohort_agg(pact_geo, pre_by_dev_year, post_recs, agg)
+    with open(OUT_COHORT, 'w') as f:
+        json.dump(cohort_agg, f, indent=2)
+    print(f'Wrote {OUT_COHORT}\n')
 
     print('=== Phase E: GeoJSON enrichment ===')
     update_geojson(post_recs)
