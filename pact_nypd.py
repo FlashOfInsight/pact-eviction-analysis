@@ -409,19 +409,61 @@ def build_conv_agg(pact_geo, pre_by_dev_year, post_recs):
             for t, n in counts.items():
                 bucket_data[bucket]['n'][t] += n
 
+    # Annualize bucket 0: each dev contributes only from conv_date to year-end,
+    # so we scale n / frac_of_year to get an annualized incident count
+    annualized_n = defaultdict(float)
+    annualized_units = 0
+    annualized_devs = 0
+    months_list = []
+    for dev, g in pact_geo.items():
+        conv_date = g.get('conv_date', '')
+        if not conv_date:
+            continue
+        conv_year = int(conv_date[:4])
+        units = dev_units.get(dev, 0)
+        if not units:
+            continue
+        if conv_year not in post_by_dev_year[dev]:
+            continue
+        try:
+            conv_dt  = date.fromisoformat(conv_date)
+            year_end = date(conv_year + 1, 1, 1)
+            frac = (year_end - conv_dt).days / 365.25
+        except Exception:
+            continue
+        if frac <= 0:
+            continue
+        months_list.append(frac * 12)
+        annualized_units += units
+        annualized_devs  += 1
+        for t in ['all'] + TYPES:
+            raw = post_by_dev_year[dev][conv_year].get(t, 0)
+            annualized_n[t] += raw / frac
+
     result = []
     for bucket in sorted(bucket_data.keys()):
         d = bucket_data[bucket]
         n = {t: d['n'].get(t, 0) for t in ['all'] + TYPES}
         u = d['units']
-        result.append({
+        entry = {
             'bucket': bucket,
             'devs':   d['devs'],
             'units':  u,
             'n':      n,
             'rate':   {t: round(n[t] / u * 1000, 2) if u else None for t in ['all'] + TYPES},
-        })
-        print(f'  bucket {bucket:+d}: {d["devs"]} devs, n={n["all"]}, rate={result[-1]["rate"]["all"]}')
+        }
+        if bucket == 0 and annualized_units:
+            entry['annualized_rate'] = {
+                t: round(annualized_n[t] / annualized_units * 1000, 2)
+                for t in ['all'] + TYPES
+            }
+            entry['annualized_n']         = {t: round(annualized_n[t], 1) for t in ['all'] + TYPES}
+            entry['avg_months_post_conv'] = round(sum(months_list) / len(months_list), 1)
+        result.append(entry)
+        print(f'  bucket {bucket:+d}: {d["devs"]} devs, n={n["all"]}, rate={result[-1]["rate"]["all"]}', end='')
+        if bucket == 0 and 'annualized_rate' in entry:
+            print(f'  → annualized rate={entry["annualized_rate"]["all"]} ({entry["avg_months_post_conv"]} mo avg)', end='')
+        print()
 
     return result
 
