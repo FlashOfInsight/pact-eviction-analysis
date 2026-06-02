@@ -360,7 +360,9 @@ def build_agg(ctrl_by_year, pact_by_year):
     return result
 
 # ── Phase D: pre/post conversion bucket aggregates ────────────────────────────
-def build_conv_agg(pact_geo, pre_by_dev_year, post_recs):
+def build_conv_agg(pact_geo, pre_recs, post_recs):
+    """Anniversary-year buckets: bucket = floor((incident_date - conv_date).days / 365).
+    Every bucket represents exactly 365 days of exposure, so rates are directly comparable."""
     with open(GEOJSON_PATH) as f:
         gj = json.load(f)
     dev_units = {
@@ -369,101 +371,45 @@ def build_conv_agg(pact_geo, pre_by_dev_year, post_recs):
         if feat['properties'].get('type') == 'pact'
     }
 
-    # index post records by dev -> year -> type -> n
-    post_by_dev_year = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-    for r in post_recs:
-        yr  = int(r['year'])
-        t   = (r.get('type') or '').strip().upper()
-        post_by_dev_year[r['development_name']][yr]['all'] += 1
-        if t in TYPES:
-            post_by_dev_year[r['development_name']][yr][t] += 1
+    conv_dates = {dev: g.get('conv_date', '') for dev, g in pact_geo.items()}
 
-    bucket_data = defaultdict(lambda: {'devs': 0, 'units': 0, 'n': defaultdict(int)})
+    # bucket -> set of devs + incident counts
+    bucket_devs = defaultdict(set)
+    bucket_n    = defaultdict(lambda: defaultdict(int))
 
-    for dev, g in pact_geo.items():
-        conv_date = g.get('conv_date', '')
-        if not conv_date:
+    for r in pre_recs + list(post_recs):
+        dev = r['development_name']
+        conv_date = conv_dates.get(dev, '')
+        if not conv_date or not dev_units.get(dev, 0):
             continue
-        conv_year = int(conv_date[:4])
-        units = dev_units.get(dev, 0)
-        if not units:
-            continue
-
-        # Pre-conversion buckets (-PRE_CONV_YEARS .. -1)
-        for yr, counts in pre_by_dev_year.get(dev, {}).items():
-            bucket = yr - conv_year
-            if bucket < -PRE_CONV_YEARS or bucket >= 0:
-                continue
-            bucket_data[bucket]['devs']  += 1
-            bucket_data[bucket]['units'] += units
-            for t, n in counts.items():
-                bucket_data[bucket]['n'][t] += n
-
-        # Post-conversion buckets (0 .. CURR_YEAR - conv_year)
-        for yr, counts in post_by_dev_year[dev].items():
-            bucket = yr - conv_year
-            if bucket < 0:
-                continue
-            bucket_data[bucket]['devs']  += 1
-            bucket_data[bucket]['units'] += units
-            for t, n in counts.items():
-                bucket_data[bucket]['n'][t] += n
-
-    # Annualize bucket 0: each dev contributes only from conv_date to year-end,
-    # so we scale n / frac_of_year to get an annualized incident count
-    annualized_n = defaultdict(float)
-    annualized_units = 0
-    annualized_devs = 0
-    months_list = []
-    for dev, g in pact_geo.items():
-        conv_date = g.get('conv_date', '')
-        if not conv_date:
-            continue
-        conv_year = int(conv_date[:4])
-        units = dev_units.get(dev, 0)
-        if not units:
-            continue
-        if conv_year not in post_by_dev_year[dev]:
+        inc_date = (r.get('date') or '')[:10]
+        if len(inc_date) < 10:
             continue
         try:
-            conv_dt  = date.fromisoformat(conv_date)
-            year_end = date(conv_year + 1, 1, 1)
-            frac = (year_end - conv_dt).days / 365.25
+            bucket = (date.fromisoformat(inc_date) - date.fromisoformat(conv_date)).days // 365
         except Exception:
             continue
-        if frac <= 0:
+        if bucket < -PRE_CONV_YEARS:
             continue
-        months_list.append(frac * 12)
-        annualized_units += units
-        annualized_devs  += 1
-        for t in ['all'] + TYPES:
-            raw = post_by_dev_year[dev][conv_year].get(t, 0)
-            annualized_n[t] += raw / frac
+        t = (r.get('type') or '').strip().upper()
+        bucket_devs[bucket].add(dev)
+        bucket_n[bucket]['all'] += 1
+        if t in TYPES:
+            bucket_n[bucket][t] += 1
 
     result = []
-    for bucket in sorted(bucket_data.keys()):
-        d = bucket_data[bucket]
-        n = {t: d['n'].get(t, 0) for t in ['all'] + TYPES}
-        u = d['units']
-        entry = {
+    for bucket in sorted(bucket_devs.keys()):
+        devs = bucket_devs[bucket]
+        u = sum(dev_units.get(d, 0) for d in devs)
+        n = {t: bucket_n[bucket].get(t, 0) for t in ['all'] + TYPES}
+        result.append({
             'bucket': bucket,
-            'devs':   d['devs'],
+            'devs':   len(devs),
             'units':  u,
             'n':      n,
             'rate':   {t: round(n[t] / u * 1000, 2) if u else None for t in ['all'] + TYPES},
-        }
-        if bucket == 0 and annualized_units:
-            entry['annualized_rate'] = {
-                t: round(annualized_n[t] / annualized_units * 1000, 2)
-                for t in ['all'] + TYPES
-            }
-            entry['annualized_n']         = {t: round(annualized_n[t], 1) for t in ['all'] + TYPES}
-            entry['avg_months_post_conv'] = round(sum(months_list) / len(months_list), 1)
-        result.append(entry)
-        print(f'  bucket {bucket:+d}: {d["devs"]} devs, n={n["all"]}, rate={result[-1]["rate"]["all"]}', end='')
-        if bucket == 0 and 'annualized_rate' in entry:
-            print(f'  → annualized rate={entry["annualized_rate"]["all"]} ({entry["avg_months_post_conv"]} mo avg)', end='')
-        print()
+        })
+        print(f'  bucket {bucket:+d}: {len(devs)} devs, n={n["all"]}, rate={result[-1]["rate"]["all"]}')
 
     return result
 
@@ -612,6 +558,10 @@ def _load_pact_pre_cache():
     return {dev: {yr: dict(counts) for yr, counts in by_yr.items()}
             for dev, by_yr in pre.items()}
 
+def _load_pact_pre_recs():
+    with open(OUT_PACT_PRE) as f:
+        return [dict(row) for row in csv.DictReader(f)]
+
 # ── main ─────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     refresh_ctrl = '--refresh' in sys.argv or '--refresh-ctrl' in sys.argv
@@ -644,8 +594,9 @@ if __name__ == '__main__':
         print('=== Phase B: loading cached PACT data ===')
         pact_by_year, post_recs = _load_pact_post_cache()
         pre_by_dev_year          = _load_pact_pre_cache()
+        pre_recs                 = _load_pact_pre_recs()
         post_n = sum(v['all'] for v in pact_by_year.values())
-        pre_n  = sum(c.get('all', 0) for by_yr in pre_by_dev_year.values() for c in by_yr.values())
+        pre_n  = len(pre_recs)
         print(f'  {post_n:,} post-conv + {pre_n:,} pre-conv from cache\n')
     else:
         print('=== Phase B: PACT incident counts ===')
@@ -667,7 +618,7 @@ if __name__ == '__main__':
     print(f'Wrote {OUT_AGG}\n')
 
     print('=== Phase D: pre/post conversion buckets ===')
-    conv_agg = build_conv_agg(pact_geo, pre_by_dev_year, post_recs)
+    conv_agg = build_conv_agg(pact_geo, pre_recs, post_recs)
     with open(OUT_CONV, 'w') as f:
         json.dump(conv_agg, f, indent=2)
     print(f'Wrote {OUT_CONV}\n')
