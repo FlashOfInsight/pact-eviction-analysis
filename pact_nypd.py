@@ -470,7 +470,7 @@ def build_cohort_agg(pact_geo, pre_by_dev_year, post_recs, agg):
 
         ctrl_row = ctrl_by_yr.get(year, {})
         rate = {t: round(n[t] / total_units * 1000, 2) for t in n}
-        result.append({
+        entry = {
             'year':                year,
             'pact_devs_in_scope':  devs_in_scope,
             'pact_devs_converted': devs_converted,
@@ -480,7 +480,22 @@ def build_cohort_agg(pact_geo, pre_by_dev_year, post_recs, agg):
             'ctrl_units':          ctrl_row.get('ctrl_units'),
             'ctrl_n':              ctrl_row.get('ctrl_n'),
             'ctrl_rate':           ctrl_row.get('ctrl_rate'),
-        })
+        }
+        if year == CURR_YEAR:
+            ytd_days = (date.today() - date(CURR_YEAR, 1, 1)).days
+            frac = ytd_days / 365.25
+            entry['ytd_days'] = ytd_days
+            entry['pact_annualized_rate'] = {
+                t: round(n[t] / total_units / frac * 1000, 2) for t in n
+            }
+            ctrl_n = ctrl_row.get('ctrl_n') or {}
+            ctrl_u = ctrl_row.get('ctrl_units') or 0
+            if ctrl_u:
+                entry['ctrl_annualized_rate'] = {
+                    t: round(ctrl_n.get(t, 0) / ctrl_u / frac * 1000, 2)
+                    for t in ['all'] + TYPES
+                }
+        result.append(entry)
         c = ctrl_row.get('ctrl_rate', {})
         print(f'  {year}: {devs_converted}/{devs_in_scope} converted  '
               f'n={n["all"]}/{total_units}u={rate["all"]}  '
