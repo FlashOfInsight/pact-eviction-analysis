@@ -482,9 +482,18 @@ def build_cohort_agg(pact_geo, pre_by_dev_year, post_recs, agg):
             'ctrl_rate':           ctrl_row.get('ctrl_rate'),
         }
         if year == CURR_YEAR:
-            ytd_days = (date.today() - date(CURR_YEAR, 1, 1)).days
+            # Use the latest actual record date, not today — data has a reporting lag
+            # and the cache may not extend to the current date.
+            curr_dates = [r['date'][:10] for r in post_recs
+                          if int(r['year']) == CURR_YEAR and r.get('date', '')[:4] == str(CURR_YEAR)]
+            if curr_dates:
+                max_dt   = date.fromisoformat(max(curr_dates))
+                ytd_days = (max_dt - date(CURR_YEAR, 1, 1)).days + 1
+            else:
+                ytd_days = (date.today() - date(CURR_YEAR, 1, 1)).days
             frac = ytd_days / 365.25
-            entry['ytd_days'] = ytd_days
+            entry['ytd_days']      = ytd_days
+            entry['ytd_through']   = max_dt.isoformat() if curr_dates else None
             entry['pact_annualized_rate'] = {
                 t: round(n[t] / total_units / frac * 1000, 2) for t in n
             }
