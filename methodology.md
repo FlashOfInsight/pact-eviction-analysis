@@ -580,3 +580,101 @@ Actual unit counts in past years may differ slightly due to demolitions,
 new construction, or unreported changes not yet reflected in PLUTO. S3's
 `total_number_of_apartments` could be used as an alternative denominator source
 for non-PACT developments; the two sources agree within ~2%.
+
+---
+
+## TODO / Future Enhancements
+
+These items are drawn from a comparison against Lochhead, Hepburn & Ellen (2026),
+"The Effects of RAD Conversion on Eviction Patterns," Housing Policy Debate
+(DOI: 10.1080/10511482.2026.2668088), which finds no significant effect of RAD
+conversion on eviction *filing* or *judgment* rates nationally or in NYS using a
+staggered difference-in-differences design.
+
+### T1 — Add filing-vs-execution framing to L5
+
+Rewrite L5 from a pure limitation note into a positive methodological statement.
+The Lochhead et al. null result for filing rates is direct evidence that filings
+alone are insufficient to measure displacement: their finding is entirely compatible
+with a large execution-rate effect. Frame the choice of execution rate as deliberate
+— it captures actual physical removal, not legal process initiation — and cite the
+paper as supporting rationale.
+
+### T2 — Note denominator conservatism (execution rate is understated)
+
+Lochhead et al. use actual occupancy from HUD tenant-level administrative data,
+which dips during renovation periods when PACT buildings may be partially vacant.
+This analysis uses contractual unit counts as the denominator. If PACT buildings
+carry lower actual occupancy during active construction, the true execution rate
+per occupied household is *higher* than the per-unit rate reported here. Add this
+as a caveat noting the reported rates are conservative.
+
+### T3 — Add execution breakdown by case type (Holdover vs. Non-Payment)
+
+Lochhead et al. examine whether the *share* of filings that are holdover cases
+(rather than non-payment) changes after RAD conversion, finding a non-significant
+upward trend in NYC. The OCA enrichment in this pipeline already captures
+`classification` (Holdover / Non-Payment) for matched executions via the
+docket-number join. Publish the breakdown of PACT executions by type in the site
+data and charts. If PACT executions are predominantly holdover (lease violations,
+unauthorized occupants) rather than rent arrears, that tells a structurally
+different and more troubling story than non-payment executions.
+
+### T4 — Add site note contextualizing this analysis against Lochhead et al.
+
+---
+
+### T5 — Recover and commit pact_rodent.py
+
+The rodent inspection pipeline was run in a prior session and its outputs are
+present in the site GeoJSON, but the script itself was never committed to the
+repo. The script needs to be reconstructed or recovered and added to version
+control so the rodent data can be refreshed on the same cadence as the other
+metrics. Until then the rodent data in the GeoJSON is a snapshot that cannot
+be updated.
+
+### T6 — Resolve missing conversion dates for 5 developments
+
+The following developments lack a `rad_transferred_date` in the NYCHA Development
+Data Book (S3) and are therefore excluded from both the PACT numerator and
+denominator in the annual rate calculation:
+
+- BAY VIEW
+- OCEAN HILL APARTMENTS
+- MORRIS PARK SENIOR CITIZENS HOME
+- CAMPOS PLAZA II
+- METRO NORTH PLAZA
+
+Source to check: NYCHA Development Data Book (`evjd-dqpz`) field
+`rad_transferred_date`. These dates may have been added in a more recent pull,
+or may need to be sourced manually from NYCHA press releases or the PACT PDF
+conversion date column. Once dates are confirmed, add them to
+`pact_control_exclusions.csv` and re-run `analyze.py`.
+
+### T7 — Add GitHub remote for pact-eviction-analysis
+
+The repo is currently local git only (no remote). Push to a private repo under
+the FlashOfInsight org so the pipeline scripts are backed up and version-tracked
+off-machine.
+
+### T8 — Document SSL cert workaround for live API re-fetch
+
+SSL certificate errors prevent running Phase 0a/0b API calls (NYPD and other
+Socrata fetches) on this machine. The established workaround is the standalone
+rebuild pattern: import the relevant module, build a minimal pact_geo from the
+cached GeoJSON, and call the aggregation functions directly to regenerate JSONs
+without making new API calls. Document this pattern explicitly in a `RUNBOOK.md`
+or inline comment so it doesn't need to be re-derived each time. Cache flags
+(`--refresh`, `--refresh-ctrl`, `--refresh-pact`) work normally when run from
+a machine without the SSL issue.
+
+Add a brief contextual note to laeo.net/data/nycha explaining that the two studies
+are complementary, not contradictory. Suggested language:
+
+> "A 2026 peer-reviewed study (Lochhead, Hepburn & Ellen) found no significant
+> change in eviction filing rates from RAD conversion nationally or in New York
+> State. This analysis measures eviction executions — marshal-enforced removals —
+> a downstream outcome not captured by that study. The findings are compatible:
+> if PACT managers do not file at substantially higher rates but the gap in actual
+> removals is this large, it implies a structurally different enforcement posture
+> at PACT properties, not merely higher filing volume."
