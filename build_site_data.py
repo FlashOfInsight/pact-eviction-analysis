@@ -188,6 +188,7 @@ def build_geojson(agg_rates):
                 "property_manager":      str(meta.get("property_manager", "")),
                 "total_units":           int(meta["total_units"]) if pd.notna(meta.get("total_units")) else None,
                 "conversion_date":       conv_date,
+                "bbls":                  "|".join(bbls),
                 "has_data":              has_data,
                 "by_year":               by_year,
                 "monthly_executions":    monthly_by_dev.get(dev, {}),
