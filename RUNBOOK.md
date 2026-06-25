@@ -13,6 +13,7 @@ Operational guide for running and refreshing each pipeline script.
 | `pact_311.py` | `--refresh` | ~5 min | 311 Socrata endpoint |
 | `pact_permits.py` | `--refresh` | ~3 min | DOB Socrata endpoint |
 | `pact_rodent.py` | `--refresh` | ~3 min | DOHMH rodent Socrata endpoint |
+| `pact_conv_evictions.py` | `--refresh` | ~2 min | Marshal evictions (2017+) |
 | `build_site_data.py` | _(no API calls; reads cached CSVs only)_ | <1 min | none |
 
 After any script run, push updated site JSONs:
