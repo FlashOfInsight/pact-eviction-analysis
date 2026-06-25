@@ -272,7 +272,84 @@ def build_control_monthly():
     }
 
 
-# ── 5. HUD occupancy timeseries ───────────────────────────────────────────────
+# ── 5. Eviction rate before/after PACT conversion ────────────────────────────
+
+def build_conv_evictions():
+    execs_path = ANALYSIS_DIR / "pact_executions.csv"
+    if not execs_path.exists():
+        print("  pact_executions.csv not found; skipping conv_evictions.json")
+        return None
+
+    from datetime import datetime
+    today_year = datetime.now().year
+    DATA_FLOOR = 2017  # earliest year in marshal dataset
+
+    # Load master: dev → conv_year, units, status
+    master = pd.read_csv(ANALYSIS_DIR / "pact_bbl_master.csv", dtype=str)
+    master = master[
+        master["conversion_date"].notna() &
+        ~master["conversion_date"].isin(["", "nan"])
+    ].copy()
+    master["conv_year"] = master["conversion_date"].str[:4].astype(int)
+    master["units"]     = pd.to_numeric(master["pact_ref_units"], errors="coerce").fillna(0).astype(int)
+    master = master[master["units"] > 0]
+    dev_info = master.set_index("development_name")[
+        ["conv_year", "units", "status_normalized"]
+    ].to_dict("index")
+
+    # Load executions: count per (dev, exec_year)
+    execs = pd.read_csv(execs_path, dtype=str)
+    execs = execs[execs["development_name"].isin(dev_info)].copy()
+    execs["exec_year"] = pd.to_datetime(execs["executed_date"], errors="coerce").dt.year
+    execs = execs.dropna(subset=["exec_year"])
+    execs["exec_year"] = execs["exec_year"].astype(int)
+    counts = execs.groupby(["development_name", "exec_year"]).size().to_dict()
+
+    # Per-dev data
+    all_offsets = set()
+    by_dev = {}
+    for dev, info in dev_info.items():
+        conv_year = info["conv_year"]
+        units     = info["units"]
+        min_off   = DATA_FLOOR - conv_year
+        max_off   = today_year - conv_year
+        dev_points = []
+        for o in range(min_off, max_off + 1):
+            n    = counts.get((dev, conv_year + o), 0)
+            rate = round(n / units * 1000, 3)
+            dev_points.append({"offset": o, "executions": int(n), "rate": rate})
+            all_offsets.add(o)
+        by_dev[dev] = {
+            "conv_year": conv_year,
+            "units":     units,
+            "status":    info.get("status_normalized", ""),
+            "data":      dev_points,
+        }
+
+    # Pooled rates by offset
+    pooled = []
+    for o in sorted(all_offsets):
+        total_exec = total_units = n_devs = 0
+        for dev, info in dev_info.items():
+            conv_year = info["conv_year"]
+            min_off   = DATA_FLOOR - conv_year
+            max_off   = today_year - conv_year
+            if min_off <= o <= max_off:
+                total_exec  += counts.get((dev, conv_year + o), 0)
+                total_units += info["units"]
+                n_devs      += 1
+        pooled.append({
+            "offset":     o,
+            "rate":       round(total_exec / total_units * 1000, 3) if total_units else None,
+            "executions": int(total_exec),
+            "units":      int(total_units),
+            "n_devs":     n_devs,
+        })
+
+    return {"pooled": pooled, "by_dev": by_dev}
+
+
+# ── 6. HUD occupancy timeseries ───────────────────────────────────────────────
 
 def build_hud_occupancy():
     summary_path = ANALYSIS_DIR / "hud_summary.json"
@@ -321,5 +398,13 @@ if __name__ == "__main__":
     if occ:
         (SITE_DATA / "hud_occupancy.json").write_text(json.dumps(occ, indent=2))
         print(f"  {len(occ)} years written")
+
+    print("Building conv_evictions.json…")
+    conv = build_conv_evictions()
+    if conv:
+        (SITE_DATA / "conv_evictions.json").write_text(json.dumps(conv, indent=2))
+        n_devs = len(conv["by_dev"])
+        offsets = [p["offset"] for p in conv["pooled"]]
+        print(f"  {n_devs} developments, offsets {min(offsets)} to {max(offsets)}")
 
     print("Done.")
