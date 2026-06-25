@@ -620,15 +620,20 @@ and regenerate `conv_evictions.json`. No other script needs to run for this char
 
 ## Final Output Table
 
-`aggregate_execution_rates.csv` — Construction Complete devs (10 devs, 7,203 units) vs. non-PACT NYCHA (166,759 units); last pull 2026-06-25.
+`aggregate_execution_rates.csv` — All PACT devs, denominator = units of converted devs only (grows as devs convert) vs. non-PACT NYCHA (166,759 units); last pull 2026-06-25.
 
-| Year | Complete exec | Complete /1k | Non-PACT exec | Non-PACT /1k | Ratio |
-|---|---|---|---|---|---|
-| 2022 | 10 | 1.39 | 5 | 0.03 | 46× |
-| 2023 | 50 | 6.94 | 63 | 0.38 | 18× |
-| 2024 | 90 | 12.49 | 234 | 1.40 | 9× |
-| 2025 | 111 | 15.41 | 305 | 1.83 | 8× |
-| 2026 YTD | 61 | 8.47 | 193 | 1.16 | 7× |
+| Year | PACT devs converted | PACT units | PACT exec | PACT /1k | Non-PACT exec | Non-PACT /1k | Ratio |
+|---|---|---|---|---|---|---|---|
+| 2017 | 1 | 1,395 | 41 | 29.39 | 627 | 3.76 | 8× |
+| 2018 | 5 | 2,518 | 37 | 14.69 | 672 | 4.03 | 4× |
+| 2019 | 6 | 3,394 | 25 | 7.37 | 643 | 3.86 | 2× |
+| 2020 | 8 | 3,660 | 4 | 1.09 | 132 | 0.79 | — (moratorium) |
+| 2021 | 11 | 7,275 | 0 | 0.0 | 0 | 0.0 | — (moratorium) |
+| 2022 | 12 | 7,852 | 10 | 1.27 | 5 | 0.03 | 42× |
+| 2023 | 16 | 10,540 | 50 | 4.74 | 63 | 0.38 | 12× |
+| 2024 | 21 | 13,917 | 96 | 6.90 | 234 | 1.40 | 5× |
+| 2025 | 27 | 17,232 | 121 | 7.02 | 305 | 1.83 | 4× |
+| 2026 YTD | 28 | 17,456 | 83 | 4.75 | 193 | 1.16 | 4× |
 
 ---
 
@@ -658,12 +663,16 @@ pull, those lots would appear in both the PACT denominator (via S3 conversion
 date) and the non-PACT BBL numerator (via PLUTO owner search) — a minor
 double-counting risk. Zero overlap was confirmed at pull time.
 
-### L4 — 2022 ratio is not reliable
-Only 10 PACT developments had reached "Construction Complete" status by 2022
-(most converted 2016–2021). Post-moratorium dynamics (courts reopening after
-COVID closures) produced a spike in eviction activity concentrated in those
-early-converted sites. The high 2022 ratio should not be interpreted as a stable
-signal; the 2024–2025 window (ratio ≈ 9–10×) is a more reliable baseline.
+### L4 — Denominator grows as devs convert; pre-2022 rates reflect few devs
+The PACT denominator includes only the units of developments that have already
+converted in a given year (1 dev in 2017, 28 by 2026). Pre-conversion years at
+each development are excluded from both numerator and denominator — those execs
+and units belong to the non-PACT control group until conversion. This means
+early years (2017–2019) reflect only 1–6 converted devs and should be read with
+that context. Post-moratorium 2022 also reflects only 12 converted devs.
+The 2024–2025 window (21–27 devs, ratio ≈ 4–5×) is the most representative
+baseline. Construction status is not used to filter — residents remain subject
+to private-management evictions whether renovation is complete or not.
 
 ### L5 — OCA filing data not available at development level
 The HDC/OCA pre-processed CSVs carry respondent mailing ZIP codes but no

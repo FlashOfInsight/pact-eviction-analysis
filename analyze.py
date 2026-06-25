@@ -1461,6 +1461,19 @@ def main():
     summary_dev.to_csv(OUT / "summary_by_development.csv", index=False)
     log.info("  summary_by_development.csv (%d rows)", len(summary_dev))
 
+    # Dev → conversion year lookup for denominator fix.
+    # Only count a dev's units toward PACT in years >= its conversion year.
+    # master_dates_raw is built above from pact_bbl_master.csv.
+    dev_conv_year: dict = {dev: int(ts.year) for dev, ts in master_dates_raw.items() if ts is not None}
+    # Fill any gaps from bbl_conv_date (covers devs sourced from control_excl/rad_lu)
+    if not pact_bbl_flat.empty:
+        _bbl_to_dev = pact_bbl_flat.drop_duplicates("bbl").set_index("bbl")["development_name"].to_dict()
+        for _bbl, _ts in bbl_conv_date.items():
+            if _ts is not None and _bbl in _bbl_to_dev:
+                _dev = _bbl_to_dev[_bbl]
+                if _dev not in dev_conv_year:
+                    dev_conv_year[_dev] = int(_ts.year)
+
     # aggregate_execution_rates.csv — one row per year, group totals
     agg_rows = []
     for year in sorted(summary_dev["year"].unique()):
@@ -1468,8 +1481,11 @@ def main():
         pact_all      = yr[yr["group"].str.startswith("PACT")]
         pact_complete = yr[yr["group"] == "PACT (Construction Complete)"]
         ctrl          = yr[yr["group"] == "Non-PACT NYCHA"]
-        pact_units     = pact_all["total_units"].sum()
-        complete_units = pact_complete["total_units"].sum()
+        # Only count units from devs converted by this year (fix denominator inflation).
+        _converted    = pact_all["development_name"].map(lambda d: dev_conv_year.get(d, 9999)) <= int(year)
+        _conv_compl   = pact_complete["development_name"].map(lambda d: dev_conv_year.get(d, 9999)) <= int(year)
+        pact_units     = pact_all.loc[_converted, "total_units"].sum()
+        complete_units = pact_complete.loc[_conv_compl, "total_units"].sum()
         ctrl_units_yr  = ctrl["total_units"].sum()
         pact_exec_n     = pact_all["executions"].sum()
         complete_exec_n = pact_complete["executions"].sum()
@@ -1480,11 +1496,11 @@ def main():
         ratio           = round(complete_per_1k / ctrl_per_1k, 1) if ctrl_per_1k > 0 else None
         agg_rows.append({
             "year":                    int(year),
-            "pact_devs":               int(pact_all["development_name"].nunique()),
+            "pact_devs":               int(pact_all.loc[_converted, "development_name"].nunique()),
             "pact_units":              float(pact_units),
             "pact_exec":               int(pact_exec_n),
             "pact_per_1k":             pact_per_1k,
-            "complete_devs":           int(pact_complete["development_name"].nunique()),
+            "complete_devs":           int(pact_complete.loc[_conv_compl, "development_name"].nunique()),
             "complete_units":          float(complete_units),
             "complete_exec":           int(complete_exec_n),
             "complete_per_1k":         complete_per_1k,
