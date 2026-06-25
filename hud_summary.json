@@ -1,0 +1,631 @@
+{
+  "non_pact_nycha": {
+    "2015": {
+      "pct_occupied_wavg": 98.6,
+      "total_units": 157702,
+      "n_developments": 158
+    },
+    "2016": {
+      "pct_occupied_wavg": 98.3,
+      "total_units": 157249,
+      "n_developments": 157
+    },
+    "2017": {
+      "pct_occupied_wavg": 98.5,
+      "total_units": 157601,
+      "n_developments": 160
+    },
+    "2018": {
+      "pct_occupied_wavg": 98.2,
+      "total_units": 155279,
+      "n_developments": 156
+    },
+    "2019": {
+      "pct_occupied_wavg": 97.8,
+      "total_units": 153191,
+      "n_developments": 149
+    },
+    "2020": {
+      "pct_occupied_wavg": 97.9,
+      "total_units": 149662,
+      "n_developments": 145
+    },
+    "2021": {
+      "pct_occupied_wavg": 97.5,
+      "total_units": 147936,
+      "n_developments": 143
+    },
+    "2022": {
+      "pct_occupied_wavg": 96.1,
+      "total_units": 146579,
+      "n_developments": 140
+    },
+    "2023": {
+      "pct_occupied_wavg": 94.8,
+      "total_units": 143711,
+      "n_developments": 137
+    },
+    "2024": {
+      "pct_occupied_wavg": 93.8,
+      "total_units": 143200,
+      "n_developments": 137
+    },
+    "2025": {
+      "pct_occupied_wavg": 91.5,
+      "total_units": 139036,
+      "n_developments": 130
+    }
+  },
+  "pact_pre_conversion": {
+    "OCEAN BAY APARTMENTS (BAYSIDE)": {
+      "2015": {
+        "pct_occupied": 97.0,
+        "hud_units": 1806,
+        "match_score": 75.6
+      }
+    },
+    "BAYCHESTER": {
+      "2015": {
+        "pct_occupied": 92.0,
+        "hud_units": 342,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 88.0,
+        "hud_units": 342,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 52.0,
+        "hud_units": 291,
+        "match_score": 100.0
+      }
+    },
+    "BELMONT-SUTTER AREA": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 72,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 99.0,
+        "hud_units": 72,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 99.0,
+        "hud_units": 72,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 100.0,
+        "hud_units": 72,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 100.0,
+        "hud_units": 72,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 99.0,
+        "hud_units": 72,
+        "match_score": 100.0
+      }
+    },
+    "LINDEN": {
+      "2015": {
+        "pct_occupied": 96.0,
+        "hud_units": 1235,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 93.0,
+        "hud_units": 1235,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 91.0,
+        "hud_units": 1231,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 88.0,
+        "hud_units": 1231,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 85.0,
+        "hud_units": 1231,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 83.0,
+        "hud_units": 1231,
+        "match_score": 100.0
+      }
+    },
+    "WILLIAMSBURG": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 1620,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 99.0,
+        "hud_units": 1620,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 99.0,
+        "hud_units": 1620,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 98.0,
+        "hud_units": 1620,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 95.0,
+        "hud_units": 1620,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 95.0,
+        "hud_units": 1621,
+        "match_score": 100.0
+      }
+    },
+    "HARLEM RIVER": {
+      "2022": {
+        "pct_occupied": 89.0,
+        "hud_units": 557,
+        "match_score": 100.0
+      }
+    },
+    "EDENWALD": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 2033,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 99.0,
+        "hud_units": 2033,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 99.0,
+        "hud_units": 2033,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 99.0,
+        "hud_units": 2033,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 99.0,
+        "hud_units": 2033,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 98.0,
+        "hud_units": 2033,
+        "match_score": 100.0
+      },
+      "2021": {
+        "pct_occupied": 98.0,
+        "hud_units": 2034,
+        "match_score": 100.0
+      },
+      "2022": {
+        "pct_occupied": 95.0,
+        "hud_units": 2034,
+        "match_score": 100.0
+      }
+    },
+    "WEST BRIGHTON I": {
+      "2015": {
+        "pct_occupied": 89.0,
+        "hud_units": 633,
+        "match_score": 90.9
+      },
+      "2016": {
+        "pct_occupied": 89.0,
+        "hud_units": 632,
+        "match_score": 90.9
+      },
+      "2017": {
+        "pct_occupied": 90.0,
+        "hud_units": 632,
+        "match_score": 90.9
+      },
+      "2018": {
+        "pct_occupied": 89.0,
+        "hud_units": 632,
+        "match_score": 90.9
+      },
+      "2019": {
+        "pct_occupied": 88.0,
+        "hud_units": 632,
+        "match_score": 90.9
+      },
+      "2020": {
+        "pct_occupied": 88.0,
+        "hud_units": 632,
+        "match_score": 90.9
+      },
+      "2021": {
+        "pct_occupied": 87.0,
+        "hud_units": 632,
+        "match_score": 90.9
+      },
+      "2022": {
+        "pct_occupied": 84.0,
+        "hud_units": 633,
+        "match_score": 90.9
+      },
+      "2023": {
+        "pct_occupied": 83.0,
+        "hud_units": 633,
+        "match_score": 90.9
+      }
+    },
+    "SAMUEL (CITY)": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 576,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 97.0,
+        "hud_units": 576,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 96.0,
+        "hud_units": 576,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 98.0,
+        "hud_units": 559,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 97.0,
+        "hud_units": 559,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 97.0,
+        "hud_units": 559,
+        "match_score": 100.0
+      },
+      "2021": {
+        "pct_occupied": 96.0,
+        "hud_units": 559,
+        "match_score": 100.0
+      },
+      "2022": {
+        "pct_occupied": 94.0,
+        "hud_units": 559,
+        "match_score": 100.0
+      },
+      "2023": {
+        "pct_occupied": 92.0,
+        "hud_units": 559,
+        "match_score": 100.0
+      }
+    },
+    "BOSTON SECOR": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 100.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 99.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 99.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 98.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 99.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2021": {
+        "pct_occupied": 97.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2022": {
+        "pct_occupied": 97.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      },
+      "2023": {
+        "pct_occupied": 95.0,
+        "hud_units": 538,
+        "match_score": 100.0
+      }
+    },
+    "MANHATTANVILLE": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 1083,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 98.0,
+        "hud_units": 1082,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 97.0,
+        "hud_units": 1082,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 98.0,
+        "hud_units": 1068,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 98.0,
+        "hud_units": 1068,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 98.0,
+        "hud_units": 1068,
+        "match_score": 100.0
+      },
+      "2021": {
+        "pct_occupied": 97.0,
+        "hud_units": 1068,
+        "match_score": 100.0
+      },
+      "2022": {
+        "pct_occupied": 96.0,
+        "hud_units": 1068,
+        "match_score": 100.0
+      },
+      "2023": {
+        "pct_occupied": 96.0,
+        "hud_units": 1068,
+        "match_score": 100.0
+      }
+    },
+    "EASTCHESTER GARDENS": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 99.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 99.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 99.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 98.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 99.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2021": {
+        "pct_occupied": 97.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2022": {
+        "pct_occupied": 95.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2023": {
+        "pct_occupied": 93.0,
+        "hud_units": 1054,
+        "match_score": 100.0
+      },
+      "2024": {
+        "pct_occupied": 82.0,
+        "hud_units": 1002,
+        "match_score": 100.0
+      }
+    },
+    "1010 EAST 178TH STREET": {
+      "2015": {
+        "pct_occupied": 100.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 100.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 99.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 98.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 97.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 100.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2021": {
+        "pct_occupied": 98.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2022": {
+        "pct_occupied": 98.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2023": {
+        "pct_occupied": 94.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      },
+      "2024": {
+        "pct_occupied": 92.0,
+        "hud_units": 218,
+        "match_score": 100.0
+      }
+    },
+    "BAY VIEW": {
+      "2015": {
+        "pct_occupied": 99.0,
+        "hud_units": 1303,
+        "match_score": 100.0
+      },
+      "2016": {
+        "pct_occupied": 97.0,
+        "hud_units": 1303,
+        "match_score": 100.0
+      },
+      "2017": {
+        "pct_occupied": 97.0,
+        "hud_units": 1303,
+        "match_score": 100.0
+      },
+      "2018": {
+        "pct_occupied": 99.0,
+        "hud_units": 1269,
+        "match_score": 100.0
+      },
+      "2019": {
+        "pct_occupied": 99.0,
+        "hud_units": 1269,
+        "match_score": 100.0
+      },
+      "2020": {
+        "pct_occupied": 99.0,
+        "hud_units": 1269,
+        "match_score": 100.0
+      },
+      "2021": {
+        "pct_occupied": 98.0,
+        "hud_units": 1269,
+        "match_score": 100.0
+      },
+      "2022": {
+        "pct_occupied": 97.0,
+        "hud_units": 1268,
+        "match_score": 100.0
+      },
+      "2023": {
+        "pct_occupied": 96.0,
+        "hud_units": 1268,
+        "match_score": 100.0
+      },
+      "2024": {
+        "pct_occupied": 94.0,
+        "hud_units": 1268,
+        "match_score": 100.0
+      }
+    },
+    "CAMPOS PLAZA II": {
+      "2015": {
+        "pct_occupied": 100.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2016": {
+        "pct_occupied": 100.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2017": {
+        "pct_occupied": 99.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2018": {
+        "pct_occupied": 100.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2019": {
+        "pct_occupied": 99.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2020": {
+        "pct_occupied": 100.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2021": {
+        "pct_occupied": 99.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2022": {
+        "pct_occupied": 97.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      },
+      "2023": {
+        "pct_occupied": 97.0,
+        "hud_units": 223,
+        "match_score": 83.3
+      },
+      "2024": {
+        "pct_occupied": 96.0,
+        "hud_units": 223,
+        "match_score": 83.3
+      },
+      "2025": {
+        "pct_occupied": 94.0,
+        "hud_units": 224,
+        "match_score": 83.3
+      }
+    }
+  }
+}

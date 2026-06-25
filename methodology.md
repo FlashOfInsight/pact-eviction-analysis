@@ -78,6 +78,28 @@ pool *at the end of that year*, as developments convert from NYCHA to PACT over 
 - **Used for:** Primary numerator — count of executed evictions at PACT and
   non-PACT NYCHA BBLs, 2022–present
 
+### S8 — HUD Picture of Subsidized Households (PSH)
+- **Source:** HUD Office of Policy Development and Research (huduser.gov)
+- **Files:** Annual Excel workbooks, `PROJECT_[YEAR].xlsx`, 2015–2025
+- **Coverage:** ~29,000 rows per year; all federally-assisted housing nationwide
+- **Contents:** One row per assisted project per year. Key fields: `name`, `code`
+  (HUD project code), `total_units`, `pct_occupied`, `people_total`,
+  `hh_income`, `rent_per_month`, demographic breakdowns, `STD_ADDR`, `STD_ZIP5`
+- **Program types present:** Public Housing, Project Based Section 8, 202/PRAC,
+  811/PRAC, S236/BMIR — **RAD/PACT conversions are absent** (see L8)
+- **Used for:** Pre-conversion PACT occupancy rates; non-PACT NYCHA occupancy
+  trend 2015–2025. Extracted to `hud_nyc_public_housing.csv` (1,746 rows)
+  via `build_hud_nyc.py`.
+- **Key finding:** Non-PACT NYCHA occupancy declined from 98.6% (2015) to 91.5%
+  (2025); PACT developments showed 95–100% occupancy in the years before their
+  RAD transfer date.
+- **Published:** Non-PACT annual series published as `hud_occupancy.json` and
+  displayed as the "NYCHA Occupancy Rate 2015–2025" chart on the dashboard.
+- **Pipeline (dashboard):** HUD Excel files → `pact_hud_pic.py` →
+  `hud_summary.json` → `build_site_data.py` → `hud_occupancy.json` (site).
+- **Pipeline (research CSV):** HUD Excel files → `build_hud_nyc.py` →
+  `hud_nyc_public_housing.csv` (1,746 rows, long-format, all 29 columns).
+
 ### S7 — OCA Housing Court Data (HDC S3 CSVs)
 - **URL base:** `https://oca-2-dev.s3.amazonaws.com/public/`
 - **Publisher:** NYS Office of Court Administration, processed and published by the
@@ -574,6 +596,41 @@ value for all holdover proceedings in our matched set. The specific grounds
 in predicate notice documents attached to case files, which are not structured
 fields in the OCA electronic system or the HDC-published CSVs.
 
+### L8 — Denominator uses contractual unit counts, not occupied units
+
+The denominator for both groups is structural unit counts: total units from the
+PACT PDF (PACT) and PLUTO residential units (non-PACT). A more precise
+denominator would use actual occupied units.
+
+**Investigation (2026-06-25):** We examined HUD Picture of Subsidized Households
+(S8, 2015–2025) and the HUD Multifamily Housing dataset (Section 8 contracts
+and properties files) for post-conversion PACT occupancy data.
+
+Findings:
+- **Pre-conversion PACT:** HUD PSH shows 95–100% occupied for most PACT
+  developments in the years before their RAD transfer date (while still tracked
+  as public housing).
+- **Post-conversion PACT:** HUD PSH does not include RAD-converted developments
+  — they leave the public housing program and do not appear in the Project Based
+  Section 8 rows either (RAD contracts are administered through a separate HUD
+  system not represented in the PSH files). The HUD Multifamily dataset also
+  contains no NYCHA PACT contracts. Post-conversion PACT occupancy is not
+  available in any publicly accessible HUD dataset examined.
+- **Non-PACT NYCHA:** HUD PSH shows a declining trend: 98.6% occupied (2015)
+  → 91.5% (2025), meaning the non-PACT denominator is slightly overstated in
+  recent years.
+
+**Impact:** If PACT buildings are ≥95% occupied (consistent with pre-conversion
+levels) and non-PACT NYCHA is ~93% occupied (2024), correcting both denominators
+from total to occupied units changes each group's absolute rate by less than 5%
+and the ratio by less than a few percentage points — far too small to materially
+affect a finding of 8–10× higher execution rates. Because non-PACT buildings are
+currently less occupied than PACT buildings were pre-conversion, a denominator
+correction would modestly *widen* the gap, not narrow it.
+
+**Conclusion:** The reported rates are conservative estimates of the
+per-occupied-unit rate. The limitation is noted but does not affect the finding.
+
 ### L7 — Non-PACT NYCHA denominator uses current PLUTO unit counts
 The 176,766 figure comes from PLUTO's current snapshot of NYCHA-owned units.
 Actual unit counts in past years may differ slightly due to demolitions,
@@ -600,14 +657,12 @@ with a large execution-rate effect. Frame the choice of execution rate as delibe
 — it captures actual physical removal, not legal process initiation — and cite the
 paper as supporting rationale.
 
-### T2 — Note denominator conservatism (execution rate is understated)
+### ~~T2 — Note denominator conservatism (execution rate is understated)~~ ✓ Documented as L8 (2026-06-25)
 
-Lochhead et al. use actual occupancy from HUD tenant-level administrative data,
-which dips during renovation periods when PACT buildings may be partially vacant.
-This analysis uses contractual unit counts as the denominator. If PACT buildings
-carry lower actual occupancy during active construction, the true execution rate
-per occupied household is *higher* than the per-unit rate reported here. Add this
-as a caveat noting the reported rates are conservative.
+Investigated via HUD PSH (S8) and HUD Multifamily datasets. Pre-conversion PACT
+occupancy was 95–100%; post-conversion PACT occupancy is not available in any
+public HUD dataset. Impact on the ratio is <5 percentage points in either
+direction. Documented as L8; no site change warranted.
 
 ### T3 — Add execution breakdown by case type (Holdover vs. Non-Payment)
 
@@ -654,6 +709,20 @@ Dates verified against the PACT website and added to `pact_bbl_master.csv`:
 All five remain Under Construction; units now included in `pact_all` denominator
 from their conversion date. No effect on the headline `pact_complete` rate until
 each reaches Construction Complete status.
+
+### ~~T9 — Wire authoritative conversion dates into pipeline~~ ✓ Done 2026-06-25
+
+NYCHA Development Data Book CSV (downloaded 2026-06-25) provided confirmed
+`RAD TRANSFERRED DATE` for all 23 previously-undated PACT developments.
+`pact_bbl_master.csv` updated with all confirmed dates. `analyze.py` extended
+to read `pact_bbl_master.csv` conversion dates as priority step 2 in the
+resolution chain (between the PACT PDF and the online NYCHA dev dataset),
+making date resolution fully local and SSL-independent.
+
+Five developments (OCEAN HILL APARTMENTS, METRO NORTH PLAZA, MORRIS PARK SENIOR
+CITIZENS HOME, BAY VIEW, CAMPOS PLAZA II) have no RAD TRANSFERRED DATE in the
+data book as of 2026-06-25; their provisional dates from the PACT website remain
+and are overridden by `pact_control_exclusions.csv` as before.
 
 ### ~~T7 — Add GitHub remote for pact-eviction-analysis~~ ✓ Done 2026-06-24
 

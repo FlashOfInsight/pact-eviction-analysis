@@ -121,9 +121,16 @@ SSL issue using `python pact_nypd.py --refresh-pact`.
 
 ## Annual Update Checklist
 
-Run these in order. Steps 2–5 require a machine without the SSL issue, or use
-the standalone rebuild workaround for step 5.
+Run these in order. Steps 2–6 require a machine without the SSL issue, or use
+the standalone rebuild workaround for step 7.
 
+0. Download fresh HUD PIC Excel files (one per year) to `~/Desktop/0/W/Work/NYCHA PACT/`.
+   Files are named `PROJECT_YYYY_2020census.xlsx`. Then regenerate the occupancy data:
+   ```bash
+   python build_hud_nyc.py   # → hud_nyc_public_housing.csv
+   python pact_hud_pic.py    # → hud_summary.json, hud_pact_matches.csv
+   ```
+   (Neither script makes Socrata API calls — no SSL issue.)
 1. Download fresh PACT PDF → `analyze.py` reads it at runtime from the NYCHA URL.
 2. `python analyze.py` — eviction execution rates
 3. `python pact_311.py` — 311 complaints

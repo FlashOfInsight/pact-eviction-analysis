@@ -272,6 +272,28 @@ def build_control_monthly():
     }
 
 
+# ── 5. HUD occupancy timeseries ───────────────────────────────────────────────
+
+def build_hud_occupancy():
+    summary_path = ANALYSIS_DIR / "hud_summary.json"
+    if not summary_path.exists():
+        print("  hud_summary.json not found; skipping hud_occupancy.json")
+        return None
+    with open(summary_path) as f:
+        summary = json.load(f)
+    non_pact = summary.get("non_pact_nycha", {})
+    return [
+        {
+            "year":           yr,
+            "pct_occupied":   round(d["pct_occupied_wavg"], 1),
+            "n_developments": d["n_developments"],
+            "total_units":    d["total_units"],
+        }
+        for yr in sorted(non_pact.keys())
+        for d in [non_pact[yr]]
+    ]
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -293,5 +315,11 @@ if __name__ == "__main__":
     ctrl_n = sum(1 for f in fc["features"] if f["properties"]["type"]=="non_pact")
     (SITE_DATA / "developments.geojson").write_text(json.dumps(fc))
     print(f"  {pact_n} PACT + {ctrl_n} non-PACT features written")
+
+    print("Building hud_occupancy.json…")
+    occ = build_hud_occupancy()
+    if occ:
+        (SITE_DATA / "hud_occupancy.json").write_text(json.dumps(occ, indent=2))
+        print(f"  {len(occ)} years written")
 
     print("Done.")

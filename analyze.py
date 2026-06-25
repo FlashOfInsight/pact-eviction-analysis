@@ -1212,11 +1212,11 @@ def main():
     control_bbls = set(addr_flat["bbl"].dropna()) - pact_bbls - set(control_excl.keys())
 
     # Build per-BBL conversion date.
-    # Priority: (1) PACT PDF conversion_date, (2) pact_control_exclusions.csv,
-    # (3) rad_transferred_date from the NYCHA development dataset.
-    # PACT PDF field is NaN for all Construction Complete developments, so (3)
-    # is the operative source for those BBLs — critical for correct pre/post
-    # routing when the data extends back before 2022.
+    # Priority: (1) PACT PDF conversion_date, (2) pact_bbl_master.csv conversion_date,
+    # (3) rad_transferred_date from the NYCHA development dataset,
+    # (4) pact_control_exclusions.csv (highest — authoritative for Under Construction BBLs).
+    # The master CSV dates are sourced from the NYCHA Development Data Book and are the
+    # most reliable local source; they supersede the online NYCHA dataset (step 3).
     bbl_conv_date: dict = {}
     for _, r in pact_bbl_flat.drop_duplicates("bbl").iterrows():
         bbl = r.get("bbl")
@@ -1224,6 +1224,27 @@ def main():
             continue
         raw = str(r.get("conversion_date", "")).strip()
         bbl_conv_date[bbl] = pd.Timestamp(raw) if raw and raw not in ("", "nan") else None
+
+    # Overlay pact_bbl_master.csv conversion_date for BBLs still missing a date.
+    # Dates were populated from the NYCHA Development Data Book (2026-06-25).
+    master_dates_raw = {}
+    master_csv = OUT / "pact_bbl_master.csv"
+    if master_csv.exists():
+        import csv as _csv
+        with open(master_csv) as _f:
+            for _row in _csv.DictReader(_f):
+                _dev = _row.get("development_name", "").strip()
+                _d   = _row.get("conversion_date", "").strip()
+                if _dev and _d and _d not in ("", "nan"):
+                    master_dates_raw[_dev] = pd.Timestamp(_d)
+    for _, r in pact_bbl_flat.drop_duplicates("bbl").iterrows():
+        bbl = r.get("bbl")
+        if not bbl or bbl_conv_date.get(bbl) is not None:
+            continue
+        dev = str(r.get("development_name", "")).strip()
+        if dev in master_dates_raw:
+            bbl_conv_date[bbl] = master_dates_raw[dev]
+            log.debug("    bbl %s → master date %s (via %s)", bbl, master_dates_raw[dev].date(), dev)
 
     # Overlay rad_transferred_date from NYCHA dev dataset for BBLs still missing a date
     rad_lu = {}
