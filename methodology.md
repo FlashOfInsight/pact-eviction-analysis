@@ -75,8 +75,10 @@ pool *at the end of that year*, as developments convert from NYCHA to PACT over 
 - **Contents:** One row per executed eviction. Key fields: `bbl`, `docket_number`,
   `court_index_number`, `eviction_address`, `eviction_zip`, `executed_date`,
   `residential_commercial_ind`
-- **Used for:** Primary numerator — count of executed evictions at PACT and
-  non-PACT NYCHA BBLs, 2022–present
+- **Used for:** (1) Primary numerator — count of executed evictions at PACT and
+  non-PACT NYCHA BBLs, 2017–present (see Step 5). (2) Before/after conversion
+  chart — all 2017+ executions at current PACT BBLs, year-indexed relative to
+  each development's conversion date (see Step 10; pipeline: `pact_conv_evictions.py`)
 
 ### S8 — HUD Picture of Subsidized Households (PSH)
 - **Source:** HUD Office of Policy Development and Research (huduser.gov)
@@ -372,17 +374,19 @@ Should return ~651 rows and ~176,766 total units.
 **Source:** S6
 
 1. Query the Socrata API with filter:  
-   `executed_date >= '2022-01-01' AND (residential_commercial_ind = 'Residential' OR residential_commercial_ind = 'R')`
+   `executed_date >= '2017-01-01' AND (residential_commercial_ind = 'Residential' OR residential_commercial_ind = 'R')`
 2. Paginate in batches of 50,000 rows (`$limit/$offset`).
 3. Normalize `bbl` field: strip non-digits, keep only if exactly 10 characters.
 4. Parse `executed_date` to datetime; extract `year`.
 5. Normalize `eviction_address` with `normalize_addr()` (lowercase, expand
    abbreviations, collapse whitespace) for potential fallback matching.
 
-**Result:** 54,697 residential eviction records, 2022–2026-04-24.
+**Result:** ~118,000 residential eviction records, 2017–present. The 2017 floor
+captures pre-conversion data for developments that converted in 2017 and later.
+The earliest record in the dataset is 2017-01-03.
 
 **Audit check:** Count residential evictions in S6 directly:  
-`https://data.cityofnewyork.us/resource/6z8x-wfk4.json?$select=count(*)&$where=executed_date >= '2022-01-01' AND (residential_commercial_ind = 'Residential' OR residential_commercial_ind = 'R')`
+`https://data.cityofnewyork.us/resource/6z8x-wfk4.json?$select=count(*)&$where=executed_date >= '2017-01-01' AND (residential_commercial_ind = 'Residential' OR residential_commercial_ind = 'R')`
 
 ---
 
@@ -533,6 +537,84 @@ rate(G, Y)        = executions(G, Y) / units(G, Y) × 1,000
 conversions have been recorded in S3 after 2025-06-24 as of the data pull date).
 The OCA data has an approximately 4–6 week reporting lag; marshal data is
 current to 2026-04-24.
+
+---
+
+## Step 10 — Before/After Conversion Rate Chart
+
+**Script:** `pact_conv_evictions.py`  
+**Source:** S6  
+**Inputs:** `pact_bbl_master.csv` (BBLs + conversion dates), `pact_executions_conv.csv` (cache)  
+**Output:** `conv_evictions.json` → site
+
+This pipeline powers the "EVICTION RATE BEFORE AND AFTER PACT CONVERSION" dashboard
+chart, which shows each development's marshal execution rate indexed to the year of its
+PACT conversion rather than the calendar year.
+
+### Method
+
+1. Read `pact_bbl_master.csv` — extract all BBLs and confirmed conversion dates.
+   Developments with no conversion date or zero units are excluded (1 development:
+   EAST 152ND STREET, which has no confirmed date as of 2026-06-25).
+2. Fetch all 2017+ residential executions from S6 (or load from cache
+   `pact_executions_conv.csv`). **2017 is the hard floor**; the marshal dataset
+   contains no records before 2017-01-03.
+3. For each execution, look up the development by BBL and compute:  
+   `year_offset = execution_year − conversion_year`
+4. For each (development, offset) pair, compute:  
+   `rate = executions / pact_ref_units × 1,000`
+5. Compute pooled rates for each offset across all developments for which that
+   offset falls within their observable window [2017, present]:  
+   `pooled_rate = Σ executions / Σ units × 1,000`
+
+### Observable windows
+
+Each development contributes data only for offsets where the corresponding calendar
+year is ≥ 2017. A development that converted in 2021 contributes pre-conversion data
+from offset −4 (2017) to −1 (2020) and post-conversion data from offset +1 onward.
+At extreme negative offsets (e.g., −8), only the most recently converted developments
+(conv_year ≥ 2025) contribute, so the pooled rate at those offsets reflects a
+different mix of developments than the pooled rate near offset 0.
+
+### Findings (as of 2026-06-25)
+
+| Offset | Pooled rate | n devs | Executions |
+|---|---|---|---|
+| −8 | 1.7 /1k | 7 | 6 |
+| −6 | 5.6 /1k | 16 | 54 |
+| −4 | 3.1 /1k | 20 | 43 |
+| −2 | 1.6 /1k | 23 | 24 |
+| 0 | 1.3 /1k | 27 | 21 |
+| +2 | 5.3 /1k | 21 | 74 |
+| +4 | 10.1 /1k | 12 | 79 |
+| +6 | 7.7 /1k | 8 | 28 |
+| +8 | 11.5 /1k | 5 | 29 |
+
+Pre-conversion rates under NYCHA management averaged 1–5 /1k. Post-conversion
+rates rise to 9–15 /1k by years +3 through +10, representing a 3–8× increase.
+
+### Limitations and caveats
+
+- **Composition effect:** The development mix changes at each offset (see observable
+  windows above). Trends at the extreme tails should not be compared directly to
+  the center without accounting for which developments are included.
+- **COVID moratorium:** The eviction moratorium (Mar 2020–Jan 2022) suppresses rates
+  for any development whose offset year fell in 2020–2021, regardless of whether
+  that offset is pre- or post-conversion.
+- **2017 floor censors early converters:** Ocean Bay converted December 2016; its
+  pre-conversion data is entirely outside the observable window. For developments
+  that converted before 2025, the pre-conversion series starts well after
+  NYCHA management began.
+- **BBL correctness:** This pipeline uses `pact_bbl_master.csv` as the authoritative
+  BBL source. BBLs are property-level identifiers that do not change on PACT
+  conversion, so pre-conversion executions at those addresses are correctly captured.
+  An earlier version of this chart (using a stale BBL set) showed 0 pre-conversion
+  executions; this was a data error, not a finding.
+
+### Annual refresh
+
+Run `python pact_conv_evictions.py --refresh` to re-fetch from the marshal API
+and regenerate `conv_evictions.json`. No other script needs to run for this chart.
 
 ---
 
