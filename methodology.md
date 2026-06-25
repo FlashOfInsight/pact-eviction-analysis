@@ -620,26 +620,26 @@ and regenerate `conv_evictions.json`. No other script needs to run for this char
 
 ## Final Output Table
 
-`aggregate_execution_rates.csv`
+`aggregate_execution_rates.csv` — Construction Complete devs (10 devs, 7,203 units) vs. non-PACT NYCHA (166,759 units); last pull 2026-06-25.
 
-| Year | PACT devs | PACT units | PACT exec | PACT /1k | Non-PACT units | Non-PACT exec | Non-PACT /1k | Ratio |
-|---|---|---|---|---|---|---|---|---|
-| 2022 | 12 | 6,940 | 28 | 4.03 | 183,538 | 8 | 0.04 | 100.8× |
-| 2023 | 16 | 9,238 | 107 | 11.58 | 181,240 | 82 | 0.45 | 25.7× |
-| 2024 | 21 | 12,615 | 196 | 15.54 | 177,863 | 273 | 1.53 | 10.2× |
-| 2025 | 23 | 13,712 | 230 | 16.77 | 176,766 | 333 | 1.88 | 8.9× |
-| 2026 YTD | 23 | 13,712 | 98 | 7.15 | 176,766 | 121 | 0.68 | 10.5× |
+| Year | Complete exec | Complete /1k | Non-PACT exec | Non-PACT /1k | Ratio |
+|---|---|---|---|---|---|
+| 2022 | 10 | 1.39 | 5 | 0.03 | 46× |
+| 2023 | 50 | 6.94 | 63 | 0.38 | 18× |
+| 2024 | 90 | 12.49 | 234 | 1.40 | 9× |
+| 2025 | 111 | 15.41 | 305 | 1.83 | 8× |
+| 2026 YTD | 61 | 8.47 | 193 | 1.16 | 7× |
 
 ---
 
 ## Known Limitations and Caveats
 
-### L1 — Incomplete PACT BBL coverage
-2 of 28 active PACT developments (335 EAST 111TH STREET, 61 units; and
-FRANKLIN AVENUE I CONVENTIONAL, 61 units; ~127 units combined) have no
-resolved BBLs. Executions at those addresses are not captured in
-`pact_executions.csv`. Their units are included in the PACT denominator,
-which understates the true PACT rate by a small margin.
+### L1 — BBL coverage
+All 29 PACT developments have confirmed BBLs in `pact_bbl_master.csv` (103 BBLs
+total, 28 with known conversion dates). EAST 152ND STREET-COURTLANDT AVENUE has 2
+BBLs but no confirmed conversion date, so it is excluded from the before/after
+chart and the complete-vs-control comparison but its BBLs are included in
+`pact_executions.csv`.
 
 ### L2 — Shared-entity BBLs
 Three Brooklyn developments (104-14 TAPSCOTT STREET, OCEAN HILL APARTMENTS,
@@ -659,10 +659,11 @@ date) and the non-PACT BBL numerator (via PLUTO owner search) — a minor
 double-counting risk. Zero overlap was confirmed at pull time.
 
 ### L4 — 2022 ratio is not reliable
-Only 12 PACT developments were active in 2022, most converted in 2016–2019.
-Post-moratorium dynamics (courts reopening after COVID closures) produced a
-spike in eviction activity concentrated in those early-converted sites. The
-134× ratio for 2022 should not be interpreted as a stable signal.
+Only 10 PACT developments had reached "Construction Complete" status by 2022
+(most converted 2016–2021). Post-moratorium dynamics (courts reopening after
+COVID closures) produced a spike in eviction activity concentrated in those
+early-converted sites. The high 2022 ratio should not be interpreted as a stable
+signal; the 2024–2025 window (ratio ≈ 9–10×) is a more reliable baseline.
 
 ### L5 — OCA filing data not available at development level
 The HDC/OCA pre-processed CSVs carry respondent mailing ZIP codes but no

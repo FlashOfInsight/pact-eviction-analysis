@@ -304,6 +304,15 @@ def build_conv_evictions():
 
     # Load executions: count per (dev, exec_year)
     execs = pd.read_csv(execs_path, dtype=str)
+    # pact_executions_conv.csv only has bbl + executed_date; join dev name from master
+    if "development_name" not in execs.columns:
+        bbl_to_dev = {}
+        for _, mrow in master.iterrows():
+            for b in str(mrow.get("bbls", "")).split("|"):
+                b = b.strip()
+                if b:
+                    bbl_to_dev[b] = mrow["development_name"]
+        execs["development_name"] = execs["bbl"].map(bbl_to_dev)
     execs = execs[execs["development_name"].isin(dev_info)].copy()
     execs["exec_year"] = pd.to_datetime(execs["executed_date"], errors="coerce").dt.year
     execs = execs.dropna(subset=["exec_year"])

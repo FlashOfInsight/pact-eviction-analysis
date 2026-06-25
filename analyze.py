@@ -1167,6 +1167,22 @@ def main():
     raw_pact  = parse_pact_pdf(pdf_bytes)
     pact_ref, excluded = clean_pact_df(raw_pact)
 
+    # Apply unit overrides from pact_bbl_master.csv for consolidated packages.
+    # The PACT PDF reports units per-group; the master has the combined total
+    # (e.g., Bushwick II Groups A/B&D/E merged, Linden + Pennsylvania Ave).
+    _master_units_path = OUT / "pact_bbl_master.csv"
+    if _master_units_path.exists():
+        import csv as _csv2
+        with open(_master_units_path) as _mf:
+            for _mrow in _csv2.DictReader(_mf):
+                _dev   = _mrow.get("development_name", "").strip()
+                _units = _mrow.get("pact_ref_units", "").strip()
+                if _dev and _units and _units not in ("", "nan"):
+                    _mask = pact_ref["development_name"] == _dev
+                    if _mask.any():
+                        pact_ref.loc[_mask, "total_units"] = int(_units)
+                        log.debug("  Unit override: %s → %s", _dev, _units)
+
     # ── Step 2: NYCHA datasets ────────────────────────────────────────────────
     addr_raw     = fetch_nycha_addresses()
     addr_flat    = normalize_nycha_addr_df(addr_raw)
