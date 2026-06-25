@@ -639,23 +639,21 @@ Script reconstructed from cached CSVs and GeoJSON output. Fetches DOHMH rodent
 inspection records (dataset p937-wjvj) by BBL for PACT and ctrl sets. Supports
 `--refresh` flag. Verified against cached data; committed and pushed.
 
-### T6 — Resolve missing conversion dates for 5 developments
+### ~~T6 — Resolve missing conversion dates for 5 developments~~ ✓ Done 2026-06-25
 
-The following developments lack a `rad_transferred_date` in the NYCHA Development
-Data Book (S3) and are therefore excluded from both the PACT numerator and
-denominator in the annual rate calculation:
+Dates verified against the PACT website and added to `pact_bbl_master.csv`:
 
-- BAY VIEW
-- OCEAN HILL APARTMENTS
-- MORRIS PARK SENIOR CITIZENS HOME
-- CAMPOS PLAZA II
-- METRO NORTH PLAZA
+| Development | Conversion date |
+|---|---|
+| OCEAN HILL APARTMENTS | 2025-09-25 |
+| METRO NORTH PLAZA | 2025-09-25 |
+| MORRIS PARK SENIOR CITIZENS HOME | 2025-12-18 |
+| BAY VIEW | 2025-12-23 |
+| CAMPOS PLAZA II | 2026-02-05 |
 
-Source to check: NYCHA Development Data Book (`evjd-dqpz`) field
-`rad_transferred_date`. These dates may have been added in a more recent pull,
-or may need to be sourced manually from NYCHA press releases or the PACT PDF
-conversion date column. Once dates are confirmed, add them to
-`pact_control_exclusions.csv` and re-run `analyze.py`.
+All five remain Under Construction; units now included in `pact_all` denominator
+from their conversion date. No effect on the headline `pact_complete` rate until
+each reaches Construction Complete status.
 
 ### ~~T7 — Add GitHub remote for pact-eviction-analysis~~ ✓ Done 2026-06-24
 
