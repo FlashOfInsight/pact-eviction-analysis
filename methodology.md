@@ -622,7 +622,16 @@ different and more troubling story than non-payment executions.
 
 ### T4 — Add site note contextualizing this analysis against Lochhead et al.
 
----
+Add a brief contextual note to laeo.net/data/nycha explaining that the two studies
+are complementary, not contradictory. Suggested language:
+
+> "A 2026 peer-reviewed study (Lochhead, Hepburn & Ellen) found no significant
+> change in eviction filing rates from RAD conversion nationally or in New York
+> State. This analysis measures eviction executions — marshal-enforced removals —
+> a downstream outcome not captured by that study. The findings are compatible:
+> if PACT managers do not file at substantially higher rates but the gap in actual
+> removals is this large, it implies a structurally different enforcement posture
+> at PACT properties, not merely higher filing volume."
 
 ### T5 — Recover and commit pact_rodent.py
 
@@ -651,30 +660,14 @@ or may need to be sourced manually from NYCHA press releases or the PACT PDF
 conversion date column. Once dates are confirmed, add them to
 `pact_control_exclusions.csv` and re-run `analyze.py`.
 
-### T7 — Add GitHub remote for pact-eviction-analysis
+### ~~T7 — Add GitHub remote for pact-eviction-analysis~~ ✓ Done 2026-06-24
 
-The repo is currently local git only (no remote). Push to a private repo under
-the FlashOfInsight org so the pipeline scripts are backed up and version-tracked
-off-machine.
+Repo created at https://github.com/FlashOfInsight/pact-eviction-analysis (public).
+`origin` set; `main` tracking remote. Large CSVs and generated outputs excluded
+via `.gitignore`.
 
-### T8 — Document SSL cert workaround for live API re-fetch
+### ~~T8 — Document SSL cert workaround for live API re-fetch~~ ✓ Done 2026-06-25
 
-SSL certificate errors prevent running Phase 0a/0b API calls (NYPD and other
-Socrata fetches) on this machine. The established workaround is the standalone
-rebuild pattern: import the relevant module, build a minimal pact_geo from the
-cached GeoJSON, and call the aggregation functions directly to regenerate JSONs
-without making new API calls. Document this pattern explicitly in a `RUNBOOK.md`
-or inline comment so it doesn't need to be re-derived each time. Cache flags
-(`--refresh`, `--refresh-ctrl`, `--refresh-pact`) work normally when run from
-a machine without the SSL issue.
-
-Add a brief contextual note to laeo.net/data/nycha explaining that the two studies
-are complementary, not contradictory. Suggested language:
-
-> "A 2026 peer-reviewed study (Lochhead, Hepburn & Ellen) found no significant
-> change in eviction filing rates from RAD conversion nationally or in New York
-> State. This analysis measures eviction executions — marshal-enforced removals —
-> a downstream outcome not captured by that study. The findings are compatible:
-> if PACT managers do not file at substantially higher rates but the gap in actual
-> removals is this large, it implies a structurally different enforcement posture
-> at PACT properties, not merely higher filing volume."
+`RUNBOOK.md` added to repo. Covers cache flags for all scripts, the SSL issue,
+and a copy-paste Python snippet for the standalone rebuild pattern (regenerates
+all three site JSONs from cached CSVs without any API calls).
