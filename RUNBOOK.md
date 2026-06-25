@@ -12,6 +12,7 @@ Operational guide for running and refreshing each pipeline script.
 | `pact_nypd.py` | `--refresh`, `--refresh-ctrl`, `--refresh-pact` | ~20 min | Phase 0a (PLUTO coords), Phase 0b (NYCHA addrs), Phase A/B (NYPD API) |
 | `pact_311.py` | `--refresh` | ~5 min | 311 Socrata endpoint |
 | `pact_permits.py` | `--refresh` | ~3 min | DOB Socrata endpoint |
+| `pact_rodent.py` | `--refresh` | ~3 min | DOHMH rodent Socrata endpoint |
 | `build_site_data.py` | _(no API calls; reads cached CSVs only)_ | <1 min | none |
 
 After any script run, push updated site JSONs:
@@ -127,13 +128,14 @@ the standalone rebuild workaround for step 5.
 2. `python analyze.py` — eviction execution rates
 3. `python pact_311.py` — 311 complaints
 4. `python pact_permits.py` — DOB job filings
-5. `python pact_nypd.py` — NYPD incidents (no code changes needed; year boundary
+5. `python pact_rodent.py` — DOHMH rodent inspections
+6. `python pact_nypd.py` — NYPD incidents (no code changes needed; year boundary
    is dynamically computed). If caches are recent, run without flags. If a full
    refresh is needed: `python pact_nypd.py --refresh-pact` for PACT only (~5 min),
    `python pact_nypd.py --refresh-ctrl` for control only (~15 min),
    `python pact_nypd.py --refresh` for both (~20 min).
-6. If only the site JSONs need regenerating from existing caches (e.g. after a
+7. If only the site JSONs need regenerating from existing caches (e.g. after a
    BBL master update or GeoJSON edit), use the standalone rebuild above or run
    `python build_site_data.py`.
-7. Verify GeoJSON enrichment looks correct for a few developments.
-8. `cd ../laeo-net && git add -A && git commit -m "Refresh NYCHA data [date]" && git push`
+8. Verify GeoJSON enrichment looks correct for a few developments.
+9. `cd ../laeo-net && git add -A && git commit -m "Refresh NYCHA data [date]" && git push`

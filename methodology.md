@@ -633,14 +633,11 @@ are complementary, not contradictory. Suggested language:
 > removals is this large, it implies a structurally different enforcement posture
 > at PACT properties, not merely higher filing volume."
 
-### T5 — Recover and commit pact_rodent.py
+### ~~T5 — Recover and commit pact_rodent.py~~ ✓ Done 2026-06-25
 
-The rodent inspection pipeline was run in a prior session and its outputs are
-present in the site GeoJSON, but the script itself was never committed to the
-repo. The script needs to be reconstructed or recovered and added to version
-control so the rodent data can be refreshed on the same cadence as the other
-metrics. Until then the rodent data in the GeoJSON is a snapshot that cannot
-be updated.
+Script reconstructed from cached CSVs and GeoJSON output. Fetches DOHMH rodent
+inspection records (dataset p937-wjvj) by BBL for PACT and ctrl sets. Supports
+`--refresh` flag. Verified against cached data; committed and pushed.
 
 ### T6 — Resolve missing conversion dates for 5 developments
 
