@@ -148,7 +148,7 @@ pool *at the end of that year*, as developments convert from NYCHA to PACT over 
    Exclude `"Planning and Engagement"` sites (not yet under private management).
 8. Strip non-digit characters from `total_units` and convert to numeric.
 
-**Result:** 28 active PACT developments, 146 excluded (Planning and Engagement).
+**Result:** 29 active PACT developments, 146 excluded (Planning and Engagement).
 
 **Audit check:** Open `pact_reference.csv`. Verify development names, unit counts,
 and status values against the source PDF at the S1 URL.
@@ -168,10 +168,10 @@ and status values against the source PDF at the S1 URL.
 5. Fall back to `total_number_of_apartments` from S3 for unit counts where the
    PDF value is missing.
 
-**Matched:** All 28 PACT developments matched to S3 except 5 that lack a
+**Matched:** All 29 PACT developments matched to S3 except 5 that lack a
 `rad_transferred_date`: OCEAN HILL APARTMENTS, METRO NORTH PLAZA, MORRIS PARK
-SENIOR CITIZENS HOME, BAY VIEW, CAMPOS PLAZA II. These 5 are **excluded from
-both pools** in the annual rate calculation.
+SENIOR CITIZENS HOME, BAY VIEW, CAMPOS PLAZA II. Conversion dates for these 5
+are sourced from `pact_bbl_master.csv` instead (manually confirmed).
 
 **Audit check:** In S3, query:  
 `https://data.cityofnewyork.us/resource/evjd-dqpz.json?$where=rad_transferred_date IS NOT NULL&$select=development,rad_transferred_date,total_number_of_apartments`  
@@ -230,14 +230,14 @@ all residential lots within a ~120–400m bounding box.
 
 ### 3.4 — BBL coverage outcome
 
-| Coverage status | Developments | Approximate units |
+| Coverage status | Developments | Units |
 |---|---|---|
-| BBLs resolved | 26 of 28 | ~15,700 |
-| No BBLs found | 2 (335 E 111TH ST, FRANKLIN AVE I*) | ~127 |
+| BBLs resolved | 29 of 29 | 17,677 |
 
-*335 E 111TH STREET and FRANKLIN AVENUE I CONVENTIONAL had no recoverable PLUTO
-match. Their executions cannot be counted; their units remain in the PACT
-denominator.
+All 29 PACT developments have confirmed BBLs in `pact_bbl_master.csv`
+(103 BBLs total). Earlier iterations had 2 unresolved developments
+(335 E 111TH ST, FRANKLIN AVE I CONVENTIONAL); these were resolved via
+manual PLUTO search and added to the master.
 
 **Note on shared-entity BBLs:** Several PACT developments share a single PLUTO
 owner entity (e.g., NYC PACT PRESERVATION PARTNERS LLC owns lots attributed to
@@ -576,19 +576,20 @@ At extreme negative offsets (e.g., −8), only the most recently converted devel
 (conv_year ≥ 2025) contribute, so the pooled rate at those offsets reflects a
 different mix of developments than the pooled rate near offset 0.
 
-### Findings (as of 2026-06-25)
+### Findings (as of 2026-06-26)
 
 | Offset | Pooled rate | n devs | Executions |
 |---|---|---|---|
-| −8 | 1.7 /1k | 7 | 6 |
-| −6 | 5.6 /1k | 16 | 54 |
-| −4 | 3.1 /1k | 20 | 43 |
-| −2 | 1.6 /1k | 23 | 24 |
-| 0 | 1.3 /1k | 27 | 21 |
+| −8 | 1.6 /1k | 8 | 6 |
+| −6 | 5.5 /1k | 17 | 54 |
+| −4 | 3.1 /1k | 21 | 43 |
+| −2 | 1.6 /1k | 24 | 24 |
+| 0 | 1.3 /1k | 28 | 21 |
 | +2 | 5.3 /1k | 21 | 74 |
 | +4 | 10.1 /1k | 12 | 79 |
 | +6 | 7.7 /1k | 8 | 28 |
 | +8 | 11.5 /1k | 5 | 29 |
+| +10 | 15.1 /1k | 1 | 21 |
 
 Pre-conversion rates under NYCHA management averaged 1–5 /1k. Post-conversion
 rates rise to 9–15 /1k by years +3 through +10, representing a 3–8× increase.
@@ -620,7 +621,7 @@ and regenerate `conv_evictions.json`. No other script needs to run for this char
 
 ## Final Output Table
 
-`aggregate_execution_rates.csv` — All PACT devs, denominator = units of converted devs only (grows as devs convert) vs. non-PACT NYCHA (166,759 units); last pull 2026-06-25.
+`aggregate_execution_rates.csv` — All PACT devs, denominator = units of converted devs only (grows as devs convert) vs. non-PACT NYCHA (166,759 units); last pull 2026-06-26.
 
 | Year | PACT devs converted | PACT units | PACT exec | PACT /1k | Non-PACT exec | Non-PACT /1k | Ratio |
 |---|---|---|---|---|---|---|---|
