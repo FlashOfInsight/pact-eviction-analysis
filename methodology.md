@@ -554,8 +554,8 @@ PACT conversion rather than the calendar year.
 ### Method
 
 1. Read `pact_bbl_master.csv` — extract all BBLs and confirmed conversion dates.
-   Developments with no conversion date or zero units are excluded (1 development:
-   EAST 152ND STREET, which has no confirmed date as of 2026-06-25).
+   Developments with no conversion date or zero units are excluded (all 29 PACT
+   developments have confirmed conversion dates as of 2026-05-08).
 2. Fetch all 2017+ residential executions from S6 (or load from cache
    `pact_executions_conv.csv`). **2017 is the hard floor**; the marshal dataset
    contains no records before 2017-01-03.
@@ -633,18 +633,16 @@ and regenerate `conv_evictions.json`. No other script needs to run for this char
 | 2023 | 16 | 10,540 | 50 | 4.74 | 63 | 0.38 | 12× |
 | 2024 | 21 | 13,917 | 96 | 6.90 | 234 | 1.40 | 5× |
 | 2025 | 27 | 17,232 | 121 | 7.02 | 305 | 1.83 | 4× |
-| 2026 YTD | 28 | 17,456 | 83 | 4.75 | 193 | 1.16 | 4× |
+| 2026 YTD | 29 | 17,677 | 84 | 4.75 | 196 | 1.18 | 4× |
 
 ---
 
 ## Known Limitations and Caveats
 
 ### L1 — BBL coverage
-All 29 PACT developments have confirmed BBLs in `pact_bbl_master.csv` (103 BBLs
-total, 28 with known conversion dates). EAST 152ND STREET-COURTLANDT AVENUE has 2
-BBLs but no confirmed conversion date, so it is excluded from the before/after
-chart and the complete-vs-control comparison but its BBLs are included in
-`pact_executions.csv`.
+All 29 PACT developments have confirmed BBLs and conversion dates in
+`pact_bbl_master.csv` (103 BBLs total). EAST 152ND STREET-COURTLANDT AVENUE
+converted 2026-05-08 (added 2026-06-26).
 
 ### L2 — Shared-entity BBLs
 Three Brooklyn developments (104-14 TAPSCOTT STREET, OCEAN HILL APARTMENTS,
@@ -665,7 +663,7 @@ double-counting risk. Zero overlap was confirmed at pull time.
 
 ### L4 — Denominator grows as devs convert; pre-2022 rates reflect few devs
 The PACT denominator includes only the units of developments that have already
-converted in a given year (1 dev in 2017, 28 by 2026). Pre-conversion years at
+converted in a given year (1 dev in 2017, 29 by 2026). Pre-conversion years at
 each development are excluded from both numerator and denominator — those execs
 and units belong to the non-PACT control group until conversion. This means
 early years (2017–2019) reflect only 1–6 converted devs and should be read with
